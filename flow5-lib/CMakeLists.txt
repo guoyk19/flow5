@@ -245,6 +245,7 @@ add_library(flow5-lib SHARED
     occ/occ_globals.cpp
     occ/occmeshparams.cpp
     panels/mesh/mesh_globals.cpp
+    panels/mesh/gmesh_globals.cpp
     panels/mesh/quadmesh.cpp
     panels/mesh/trimesh.cpp
     panels/mesh/xflmesh.cpp
@@ -413,7 +414,7 @@ api/xfoiltask.h"
 )
 
 if(WIN32)
-    target_include_directories(flow5-lib PUBLIC D:/dev/flow5/XFoil-lib)
+    target_include_directories(flow5-lib PUBLIC "${XFOIL_INCLUDE_DIR}")
 elseif(LINUX)
     target_include_directories(flow5-lib PUBLIC /usr/local/include/XFoil/)
 endif()
@@ -454,20 +455,30 @@ endif()
 if(WIN32)
     target_compile_definitions(flow5-lib PUBLIC WIN_OS )
     target_compile_definitions(flow5-lib PUBLIC INTEL_MKL )
-    
 
+    foreach(required QT_ROOT OCCT_ROOT GMSH_ROOT GMSH_LIB_DIR MKL_ROOT ONEAPI_ROOT XFOIL_LIB_DIR XFOIL_INCLUDE_DIR)
+        if(NOT DEFINED ${required} OR "${${required}}" STREQUAL "")
+            message(FATAL_ERROR "${required} must be set for a Windows build")
+        endif()
+    endforeach()
 
-    link_directories(C:/Qt/6.9.1/msvc2022_64/lib)
-    link_directories(D:/bin/build/OCC_792/win64/vc14/lib)
+    target_include_directories(flow5-lib PUBLIC
+        "${QT_ROOT}/include"
+        "${QT_ROOT}/include/QtCore"
+        "${OCCT_ROOT}/inc"
+        "${GMSH_ROOT}/api"
+        "${MKL_ROOT}/include"
+        "${XFOIL_INCLUDE_DIR}"
+    )
 
-    link_directories(C:/Program Files (x86)/Intel/oneAPI/mkl/latest/lib)
-    link_directories(C:/Program Files (x86)/Intel/oneAPI/compiler/latest/lib)
-
-
-    include_directories(C:/Qt/6.9.1/msvc2022_64/include)
-    include_directories(C:/Qt/6.9.1/msvc2022_64/include/QtCore)
-    include_directories(D:/bin/build/OCC_792/inc)
-    include_directories("C:/Program Files (x86)/inteloneapi/mkl/latest/include")
+    target_link_directories(flow5-lib PUBLIC
+        "${QT_ROOT}/lib"
+        "${OCCT_ROOT}/win64/vc14/libd"
+        "${GMSH_LIB_DIR}"
+        "${XFOIL_LIB_DIR}"
+        "${MKL_ROOT}/lib"
+        "${ONEAPI_ROOT}/compiler/latest/lib"
+    )
     
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
@@ -475,10 +486,13 @@ if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STANDARD} /permissive- ")
     
    
-   link_libraries(PUBLIC mkl_core_dll mkl_intel_thread_dll mkl_intel_lp64_dll libiomp5md )
+   target_link_libraries(flow5-lib PUBLIC
+       Qt6Core XFoil1 gmsh.dll.lib
+       mkl_core_dll mkl_intel_thread_dll mkl_intel_lp64_dll libiomp5md
+   )
  endif()
 
-link_libraries(PUBLIC
+target_link_libraries(flow5-lib PUBLIC
     TKBO
     TKBRep
     TKBool

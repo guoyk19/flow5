@@ -10,6 +10,9 @@ DEFINES += FLOW5_IO_LIB
 CONFIG += c++20
 TARGET = flow5-io-lib
 
+isEmpty(FLOW5_LIB_DIR): FLOW5_LIB_DIR = $$PWD/../flow5-lib
+isEmpty(XFOIL_INCLUDE_DIR): XFOIL_INCLUDE_DIR = $$PWD/../XFoil-lib
+
 #The path to the libraries' header files required by the code at compile time
 INCLUDEPATH += $$PWD/../flow5-lib/
 INCLUDEPATH += $$PWD/../flow5-lib/api
@@ -18,8 +21,7 @@ LIBS += -L../flow5-lib -lflow5-lib
 INCLUDEPATH += ./api
 
 #-----XFoil----
-# The path to the libraries' header files required by the code at compile time
-INCLUDEPATH += $$PWD/../XFoil-lib/
+INCLUDEPATH += $$XFOIL_INCLUDE_DIR
 
 
 OBJECTS_DIR = ./objects
@@ -74,19 +76,20 @@ win32-msvc {
 
 
 #------------ OPEN CASCADE --------------------------
-    INCLUDEPATH += D:/bin/build/OCCT/inc
-    LIBS += -LD:/bin/build/OCCT/win64/vc14/lib
+    INCLUDEPATH += $$OCCT_ROOT/inc
+    LIBS += -L$$OCCT_ROOT/win64/vc14/libd
 #    LIBS += -LD:/bin/build/OCCT/win64/vc14/bin
 
 
 #--------------------- GMSH ------------------------
-    INCLUDEPATH += D:/bin/gmsh-4.14.1-Windows64-sdk/include/
-    LIBS += -L"D:/bin/gmsh-4.14.1-Windows64-sdk/lib"
+    INCLUDEPATH += $$GMSH_ROOT/api
+    LIBS += -L$$GMSH_LIB_DIR
     LIBS += -lgmsh.dll  # the file name is gmsh.dll.lib
 
 
 #-----XFoil-----
-    LIBS += -L../XFoil-lib -lXFoil1
+    LIBS += -L$$XFOIL_LIB_DIR -lXFoil1
+    LIBS += -L$$FLOW5_LIB_DIR -lflow5-lib
 
 }
 
